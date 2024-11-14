@@ -1,0 +1,32 @@
+﻿@model IEnumerable<DeviceModel>
+
+<h2>Lista de Dispositivos</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Serial Number</th>
+            <th>Device Type</th>
+            <th>Cycles</th>
+            <th>Weekly Cycles</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var device in Model)
+        {
+            <tr>
+                <td>@device.SerialNumber</td>
+                <td>
+                    @(device.FKTypeID == 1 ? "Batería" : device.FKTypeID == 2 ? "Rectificador" : "Umihebi")
+                </td>
+                <td>@device.Cycles</td>
+                <td>@device.WeeklyCycles</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@device.Id" class="btn btn-primary">Editar</a>
+                    <a asp-action="Delete" asp-route-id="@device.Id" class="btn btn-danger">Eliminar</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
