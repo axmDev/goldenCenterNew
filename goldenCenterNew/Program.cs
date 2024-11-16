@@ -10,8 +10,6 @@ builder.Services.AddDbContext<GoldenCenterContext>(options =>
 
 var app = builder.Build();
 
-
-
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -26,6 +24,12 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllerRoute(
+        name: "default",
+        pattern: "{controller=Devices}/{action=Index}/{id?}");
+});
 
 app.MapControllerRoute(
     name: "default",

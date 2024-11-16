@@ -14,6 +14,8 @@ namespace goldenCenterNew.Models
         [Display(Name = "Device Type")]
         public int FKTypeID { get; set; }
 
+        public string DeviceTypeName { get; set; }
+
         public int Cycles { get; set; } = 0;
         public int WeeklyCycles { get; set; } = 0;
     }

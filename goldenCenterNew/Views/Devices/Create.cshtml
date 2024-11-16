@@ -1,1 +1,28 @@
-﻿@model DeviceModel<h2>Agregar Dispositivo</h2><form asp-action="Create" method="post">    <div class="form-group">        <label asp-for="SerialNumber"></label>        <input asp-for="SerialNumber" class="form-control" />        <span asp-validation-for="SerialNumber" class="text-danger"></span>    </div>    <div class="form-group">        <label asp-for="FKTypeID">Tipo de Dispositivo</label>        <select asp-for="FKTypeID" class="form-control" asp-items="ViewBag.DeviceTypes"></select>    </div>    <button type="submit" class="btn btn-primary">Agregar</button></form>
+﻿@model goldenCenterNew.Models.DeviceModel
+
+@{
+    ViewData["Title"] = "Agregar Dispositivo";
+}
+
+<h2>Agregar Dispositivo</h2>
+
+<form asp-action="Create" method="post">
+    <div class="form-group">
+        <label asp-for="SerialNumber" class="control-label">Número de Serial</label>
+        <input asp-for="SerialNumber" class="form-control" />
+        <span asp-validation-for="SerialNumber" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="FKTypeID" class="control-label">Tipo de Dispositivo</label>
+        <select asp-for="FKTypeID" class="form-control" asp-items="ViewBag.DeviceTypes"></select>
+        <span asp-validation-for="FKTypeID" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

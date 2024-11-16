@@ -1,46 +1,122 @@
-﻿using goldenCenterNew.Models;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using goldenCenterNew.Data;
+using goldenCenterNew.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 public class DevicesController : Controller
 {
-    public IActionResult Create()
+    private readonly GoldenCenterContext _context;
+
+    public DevicesController(GoldenCenterContext context)
     {
-        var deviceTypes = new List<SelectListItem>
-        {
-            new SelectListItem { Value = "", Text = "Seleccionar"},
-            new SelectListItem { Value = "1", Text = "Batería" },
-            new SelectListItem { Value = "2", Text = "Rectificador" },
-            new SelectListItem { Value = "3", Text = "Umihebi" }
-        };
-
-        ViewBag.DeviceTypes = deviceTypes;
-
-        return View();
+        _context = context;
     }
 
-    public IActionResult Index()
+    public IActionResult Index(int? typeFilter)
     {
-        var devices = new List<DeviceModel>();
+        var devicesQuery = _context.CT_Devices.AsQueryable();
+
+        if (typeFilter.HasValue)
+        {
+            devicesQuery = devicesQuery.Where(d => d.FKTypeID == typeFilter.Value);
+        }
+
+        var devices = _context.CT_Devices.Select(d => new DeviceModel { Id = d.PKDeviceID, SerialNumber = d.SerialNumber, FKTypeID = d.FKTypeID, Cycles = d.Cycles, WeeklyCycles = d.WeeklyCycles, DeviceTypeName = d.FKTypeID == 1 ? "Bateria" : d.FKTypeID == 2 ? "Rectificador" : d.FKTypeID == 3 ? "Umihebi" : "Desconocido"}).ToList();
+        var device = devicesQuery.Select(d => new DeviceModel { Id = d.PKDeviceID, SerialNumber = d.SerialNumber, FKTypeID = d.FKTypeID, Cycles = d.Cycles, WeeklyCycles = d.WeeklyCycles, DeviceTypeName = d.FKTypeID == 1 ? "Bateria" : d.FKTypeID == 2 ? "Rectificador" : d.FKTypeID == 3 ? "Umihebi" : "Desconocido" }).ToList();
+
+
+        ViewBag.TypeFilterOptions = new List<SelectListItem>
+        {
+            new SelectListItem { Text = "Todos", Value = "", Selected = !typeFilter.HasValue },
+            new SelectListItem { Text = "Baterías", Value = "1", Selected = typeFilter == 1 },
+            new SelectListItem { Text = "Rectificadores", Value = "2", Selected = typeFilter == 2 },
+            new SelectListItem { Text = "Umihebi", Value = "3", Selected = typeFilter == 3 }
+        };
+
         return View(devices);
     }
 
+    public IActionResult Create()
+    {
+        DeviceModel deviceModel = new DeviceModel();
+
+        ViewBag.DeviceTypes = new SelectList(new[]
+        {
+            new {Id = 0, Name = "Seleccionar"},
+            new { Id = 1, Name = "Bateria"},
+            new { Id = 2, Name = "Rectificador" },
+            new { Id = 3, Name = "Umihebi" }
+        }, "Id", "Name");
+
+        return View(deviceModel);
+    }
+
     [HttpPost]
-    public IActionResult Create(goldenCenterNew.Models.DeviceModel model)
+    [ValidateAntiForgeryToken]
+    public IActionResult Create(DeviceModel deviceModel)
     {
         if (ModelState.IsValid)
         {
+            CT_Devices device = new CT_Devices
+            {
+                SerialNumber = deviceModel.SerialNumber,
+                FKTypeID = deviceModel.FKTypeID,
+                Cycles = deviceModel.Cycles,
+                WeeklyCycles = deviceModel.WeeklyCycles,
+                Available = true,
+                LastUpdated = DateTime.Now,
+            };
+
+            _context.CT_Devices.Add(device);
+            _context.SaveChanges();
+
             return RedirectToAction("Index");
         }
 
-        ViewBag.DeviceTypes = new List<SelectListItem>
-        {
-            new SelectListItem { Value = "", Text = "Seleccionar"},
-            new SelectListItem { Value = "1", Text = "Batería" },
-            new SelectListItem { Value = "2", Text = "Rectificador" },
-            new SelectListItem { Value = "3", Text = "Umihebi" }
-        };
+        ViewBag.DeviceTypes = new SelectList(new[]
+{
+            new {Id = 0, Name = "Seleccionar"},
+            new { Id = 1, Name = "Bateria"},
+            new { Id = 2, Name = "Rectificador" },
+            new { Id = 3, Name = "Umihebi" }
+        }, "Id", "Name");
 
-        return View(model);
+        return View(deviceModel);
+    }
+
+    public IActionResult Delete(int id)
+    {
+        //if (id <= 0)
+        //{
+        //    return NotFound();
+        //}
+
+        var device = _context.CT_Devices.FirstOrDefault(d => d.PKDeviceID == id);
+
+        if (device == null)
+        {
+            return NotFound();
+        }
+
+        return View(device);
+    }
+
+    [HttpPost, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    public IActionResult DeleteConfirmed(int id)
+    {
+        var device = _context.CT_Devices.Find(id);
+
+        if (device == null)
+        {
+            return NotFound();
+        }
+
+        _context.CT_Devices.Remove(device);
+        _context.SaveChanges();
+
+        ViewBag.Message = "El dispositivo se elimino exitosamente";
+
+        return View("Delete");
     }
 }

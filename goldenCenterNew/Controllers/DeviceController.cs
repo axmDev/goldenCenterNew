@@ -42,7 +42,7 @@ namespace goldenCenterNew.Controllers
             var deviceType = _context.CT_DeviceTypes.FirstOrDefault(dt => dt.PKDeviceTypeID == existingDevice.FKTypeID);
             if (deviceType != null && existingDevice.WeeklyCycles > deviceType.WeeklyCyclesLimit)
             {
-                existingDevice.Available = false; // Bloquear el dispositivo
+                existingDevice.Available = false;
                 _context.SaveChanges();
                 return Ok(new { message = "Device reached weekly limit. Maintenance required." });
             }
