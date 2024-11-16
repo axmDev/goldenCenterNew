@@ -9,40 +9,41 @@
             <select id="typeFilter" name="typeFilter" class="form-control" onchange="this.form.submit()">
                 @foreach (var option in ViewBag.TypeFilterOptions)
                 {
-                    <option value="@option.Value" @(option.Selected ? "selected=\"selected\"" : "")>@option.Text</option>
+                    <option value="@option.Value"  selected="@option.Selected">@option.Text</option>
                 }
             </select>
         </div>
     </form>
 </div>
 
-<div class="table-responsive">
-    <table class="table table-bordered table-striped">
-        <thead class="thead-dark">
-            <tr>
-                <th>Serial Number</th>
-                <th>Tipo de Dispositivo</th>
-                <th>Ciclos</th>
-                <th>WeeklyCycles</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var device in Model)
-            {
-                    <tr>
-                        <td>@device.SerialNumber</td>
-                        <td>@device.DeviceTypeName</td>
-                        <td>@device.Cycles</td>
-                        <td>@device.WeeklyCycles</td>
-                        <td>
-                            <a asp-action="Delete" asp-route-id="@device.Id" class="btn btn-danger btn-sm mx-1">Eliminar</a>
-                        </td>
-                    </tr>
-            }
-        </tbody>
-    </table>
-</div>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Serial Number</th>
+                    <th>Tipo de Dispositivo</th>
+                    <th>Ciclos</th>
+                    <th>WeeklyCycles</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var device in Model)
+                {
+                        <tr>
+                            <td>@device.SerialNumber</td>
+                            <td>@device.DeviceTypeName</td>
+                            <td>@device.Cycles</td>
+                            <td>@device.WeeklyCycles</td>
+                            <td>
+                                <a asp-action="Delete" asp-route-id="@device.Id" class="btn btn-danger btn-sm mx-1">Eliminar</a>
+                            </td>
+                        </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 
-<div class="d-flex justify-content-center mt-4">
-    <a asp-action="Create" class="btn btn-primary">Agregar Nuevo Dispositivo</a>
+    <div class="d-flex justify-content-center mt-4">
+        <a asp-action="Create" class="btn btn-primary">Agregar Nuevo Dispositivo</a>
+    </div>
 </div>

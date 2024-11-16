@@ -3,7 +3,9 @@ using goldenCenterNew.Data;
 using goldenCenterNew.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-public class DevicesController : Controller
+namespace goldenCenterNew.Controllers
+{
+    public class DevicesController : Controller
 {
     private readonly GoldenCenterContext _context;
 
@@ -21,8 +23,8 @@ public class DevicesController : Controller
             devicesQuery = devicesQuery.Where(d => d.FKTypeID == typeFilter.Value);
         }
 
-        var devices = _context.CT_Devices.Select(d => new DeviceModel { Id = d.PKDeviceID, SerialNumber = d.SerialNumber, FKTypeID = d.FKTypeID, Cycles = d.Cycles, WeeklyCycles = d.WeeklyCycles, DeviceTypeName = d.FKTypeID == 1 ? "Bateria" : d.FKTypeID == 2 ? "Rectificador" : d.FKTypeID == 3 ? "Umihebi" : "Desconocido"}).ToList();
-        var device = devicesQuery.Select(d => new DeviceModel { Id = d.PKDeviceID, SerialNumber = d.SerialNumber, FKTypeID = d.FKTypeID, Cycles = d.Cycles, WeeklyCycles = d.WeeklyCycles, DeviceTypeName = d.FKTypeID == 1 ? "Bateria" : d.FKTypeID == 2 ? "Rectificador" : d.FKTypeID == 3 ? "Umihebi" : "Desconocido" }).ToList();
+        //var devices = _context.CT_Devices.Select(d => new DeviceModel { Id = d.PKDeviceID, SerialNumber = d.SerialNumber, FKTypeID = d.FKTypeID, Cycles = d.Cycles, WeeklyCycles = d.WeeklyCycles, DeviceTypeName = d.FKTypeID == 1 ? "Bateria" : d.FKTypeID == 2 ? "Rectificador" : d.FKTypeID == 3 ? "Umihebi" : "Desconocido"}).ToList();
+        var devices = devicesQuery.Select(d => new DeviceModel { Id = d.PKDeviceID, SerialNumber = d.SerialNumber, FKTypeID = d.FKTypeID, Cycles = d.Cycles, WeeklyCycles = d.WeeklyCycles, DeviceTypeName = d.FKTypeID == 1 ? "Bateria" : d.FKTypeID == 2 ? "Rectificador" : d.FKTypeID == 3 ? "Umihebi" : "Desconocido" }).ToList();
 
 
         ViewBag.TypeFilterOptions = new List<SelectListItem>
@@ -119,4 +121,5 @@ public class DevicesController : Controller
 
         return View("Delete");
     }
+}
 }
