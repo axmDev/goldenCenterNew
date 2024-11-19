@@ -18,6 +18,8 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Testcontainers.MsSql" Version="4.0.0" />
+    <PackageReference Include="YmlHelper.Writer" Version="1.0.0" />
   </ItemGroup>
 
 </Project>

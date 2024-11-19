@@ -88,11 +88,6 @@ namespace goldenCenterNew.Controllers
 
     public IActionResult Delete(int id)
     {
-        //if (id <= 0)
-        //{
-        //    return NotFound();
-        //}
-
         var device = _context.CT_Devices.FirstOrDefault(d => d.PKDeviceID == id);
 
         if (device == null)

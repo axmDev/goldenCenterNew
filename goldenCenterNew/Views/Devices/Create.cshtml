@@ -19,8 +19,10 @@
         <span asp-validation-for="FKTypeID" class="text-danger"></span>
     </div>
 
-    <button type="submit" class="btn btn-primary">Guardar</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    <div class="d-flex justify-content-center mt-4">
+        <button type="submit" class="btn btn-primary me-4">Guardar</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </div>
 </form>
 
 @section Scripts {
