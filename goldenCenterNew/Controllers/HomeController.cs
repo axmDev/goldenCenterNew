@@ -1,32 +1,28 @@
-using goldenCenterNew.Models;
+using goldenCenterNew.Data;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
 
 namespace goldenCenterNew.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly GoldenCenterContext _context;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(GoldenCenterContext context)
         {
-            _logger = logger;
+            _context = context;
         }
 
         public IActionResult Index()
         {
-            return View();
-        }
+            var deviceStats = _context.CT_DeviceTypes.Select(dt => new
+            {
+                dt.Description,
+                TotalDevices = _context.CT_Devices.Count(d => d.FKTypeID == dt.PKDeviceTypeID)
+            }).ToList();
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
+            ViewBag.DeviceStats = deviceStats;
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return View();
         }
     }
 }

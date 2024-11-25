@@ -1,13 +1,11 @@
-﻿using goldenCenterNew.Data;
-using goldenCenterNew.Models;
+﻿using goldenCenterNew.Models;
+using goldenCenterNew.Data;
 using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
 
 namespace goldenCenterNew.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class DeviceController : ControllerBase
+    public class DeviceController : Controller
     {
         private readonly GoldenCenterContext _context;
 
@@ -16,7 +14,6 @@ namespace goldenCenterNew.Controllers
             _context = context;
         }
 
-        // Endpoint para actualizar múltiples dispositivos y registrar ciclos
         [HttpPost]
         [Route("updateCyclesBatch")]
         public IActionResult UpdateCyclesBatch([FromBody] List<DeviceUpdateModel> devices)
@@ -27,6 +24,9 @@ namespace goldenCenterNew.Controllers
             }
 
             var results = new List<object>();
+            var currentDate = DateTime.Now;
+            var currentWeek = GetIso8601WeekOfYear(currentDate);
+            var currentYear = currentDate.Year;
 
             foreach (var device in devices)
             {
@@ -36,61 +36,101 @@ namespace goldenCenterNew.Controllers
                     continue;
                 }
 
-                // Buscar el dispositivo en la base de datos
                 var existingDevice = _context.CT_Devices
                     .FirstOrDefault(d => d.SerialNumber == device.SerialNumber && d.FKTypeID == device.FKTypeID);
 
                 if (existingDevice == null)
                 {
-                    // Si el dispositivo no existe, agregarlo como nuevo
                     var newDevice = new CT_Devices
                     {
                         SerialNumber = device.SerialNumber,
                         FKTypeID = device.FKTypeID,
-                        Cycles = 0, // Inicializar ciclos
-                        WeeklyCycles = 0, // Inicializar ciclos semanales
-                        LastUpdated = DateTime.Now,
+                        Cycles = 1,
+                        LastUpdated = currentDate,
                         Available = true
                     };
 
                     _context.CT_Devices.Add(newDevice);
                     _context.SaveChanges();
 
-                    results.Add(new
+                    _context.CR_CyclesHistories.Add(new CR_CyclesHistories
                     {
-                        SerialNumber = newDevice.SerialNumber,
-                        DeviceType = GetDeviceTypeName(newDevice.FKTypeID),
-                        Cycles = newDevice.Cycles,
-                        WeeklyCycles = newDevice.WeeklyCycles,
-                        Available = newDevice.Available,
-                        Message = "New device added successfully."
+                        FKDeviceID = newDevice.PKDeviceID,
+                        Week = currentWeek,
+                        Year = currentYear,
+                        WeeklyCycles = 1,
+                        LastUpdated = currentDate,
+                        Available = true
                     });
 
-                    continue; // Pasar al siguiente dispositivo
-                }
-
-                // Actualizar ciclos si el dispositivo ya existe
-                existingDevice.Cycles += 1;
-                existingDevice.WeeklyCycles += 1;
-                existingDevice.LastUpdated = DateTime.Now;
-
-                var deviceType = _context.CT_DeviceTypes.FirstOrDefault(dt => dt.PKDeviceTypeID == existingDevice.FKTypeID);
-                if (deviceType != null && existingDevice.WeeklyCycles > deviceType.WeeklyCyclesLimit)
-                {
-                    existingDevice.Available = false; // Marcar como no disponible
                     _context.SaveChanges();
 
                     results.Add(new
                     {
-                        SerialNumber = existingDevice.SerialNumber,
-                        DeviceType = GetDeviceTypeName(existingDevice.FKTypeID),
-                        Cycles = existingDevice.Cycles,
-                        WeeklyCycles = existingDevice.WeeklyCycles,
-                        Available = existingDevice.Available,
-                        Message = "Device exceeded weekly usage limit. Maintenance required."
+                        SerialNumber = newDevice.SerialNumber,
+                        Message = "Device added and registered successfully."
                     });
 
-                    continue; // No seguir procesando este dispositivo
+                    continue;
+                }
+
+                existingDevice.Cycles += 1;
+                existingDevice.LastUpdated = currentDate;
+
+                var deviceType = _context.CT_DeviceTypes.FirstOrDefault(dt => dt.PKDeviceTypeID == existingDevice.FKTypeID);
+                if (deviceType != null)
+                {
+                    var usagePercentage = (double)existingDevice.Cycles / deviceType.CyclesLimit * 100;
+
+                    if (usagePercentage >= 80 && usagePercentage < 100)
+                    {
+                        results.Add(new
+                        {
+                            SerialNumber = existingDevice.SerialNumber,
+                            DeviceType = deviceType.Description,
+                            Cycles = existingDevice.Cycles,
+                            Available = existingDevice.Available,
+                            Message = "Warning: Device is at 80% or more of its cycle limit."
+                        });
+                    }
+
+                    if (existingDevice.Cycles >= deviceType.CyclesLimit)
+                    {
+                        existingDevice.Available = false;
+                        _context.SaveChanges();
+
+                        return Ok(new
+                        {
+                            SerialNumber = existingDevice.SerialNumber,
+                            DeviceType = deviceType.Description,
+                            Cycles = existingDevice.Cycles,
+                            Available = existingDevice.Available,
+                            Message = "Device has been blocked due to reaching the usage limit. You must replace the device (Serial: " +
+                                      $"{existingDevice.SerialNumber}, Type: {deviceType.Description}) and try again. Further processing has been stopped."
+                        });
+                    }
+                }
+
+                var history = _context.CR_CyclesHistories
+                    .FirstOrDefault(h => h.FKDeviceID == existingDevice.PKDeviceID && h.Week == currentWeek && h.Year == currentYear);
+
+                if (history == null)
+                {
+                    history = new CR_CyclesHistories
+                    {
+                        FKDeviceID = existingDevice.PKDeviceID,
+                        Week = currentWeek,
+                        Year = currentYear,
+                        WeeklyCycles = 1,
+                        LastUpdated = currentDate,
+                        Available = true
+                    };
+                    _context.CR_CyclesHistories.Add(history);
+                }
+                else
+                {
+                    history.WeeklyCycles += 1;
+                    history.LastUpdated = currentDate;
                 }
 
                 _context.SaveChanges();
@@ -98,27 +138,14 @@ namespace goldenCenterNew.Controllers
                 results.Add(new
                 {
                     SerialNumber = existingDevice.SerialNumber,
-                    DeviceType = GetDeviceTypeName(existingDevice.FKTypeID),
+                    DeviceType = deviceType?.Description,
                     Cycles = existingDevice.Cycles,
-                    WeeklyCycles = existingDevice.WeeklyCycles,
                     Available = existingDevice.Available,
-                    Message = "Cycles updated successfully."
+                    Message = "Device updated successfully."
                 });
             }
 
             return Ok(results);
-        }
-
-        // Método para convertir FKTypeID a un nombre descriptivo
-        private string GetDeviceTypeName(int fkTypeId)
-        {
-            return fkTypeId switch
-            {
-                1 => "Batería",
-                2 => "Rectificador",
-                3 => "Umihebi",
-                _ => "Tipo desconocido"
-            };
         }
 
         private int GetIso8601WeekOfYear(DateTime time)

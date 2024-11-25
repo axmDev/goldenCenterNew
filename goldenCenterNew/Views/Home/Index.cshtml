@@ -1,8 +1,28 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewBag.Title = "Bienvenido a GoldenCenter";
+    var deviceStats = ViewBag.DeviceStats as IEnumerable<dynamic>;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container mt-5">
+    <h1 class="text-center">Bienvenido a GoldenCenter</h1>
+    <p class="text-center">Tu plataforma de gestión de dispositivos y mantenimientos</p>
+
+    <h3 class="mt-4">Estadísticas de Dispositivos</h3>
+    <table class="table table-bordered mt-3">
+        <thead>
+            <tr>
+                <th>Tipo de Dispositivo</th>
+                <th>Cantidad</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var stat in deviceStats)
+            {
+                <tr>
+                    <td>@stat.Description</td>
+                    <td>@stat.TotalDevices</td>
+                </tr>
+            }
+        </tbody>
+    </table>
 </div>

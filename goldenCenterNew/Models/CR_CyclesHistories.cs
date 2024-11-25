@@ -10,7 +10,7 @@ namespace goldenCenterNew.Models
         public int FKDeviceID { get; set; }
         public int Week { get; set; }
         public int Year { get; set; }
-        public string SerialNumber { get; set; }
+        public int WeeklyCycles { get; set; }
         public DateTime LastUpdated { get; set; }
         public bool Available { get; set; }
 

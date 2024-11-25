@@ -23,7 +23,6 @@
                     <th>Serial Number</th>
                     <th>Tipo de Dispositivo</th>
                     <th>Ciclos</th>
-                    <th>WeeklyCycles</th>
                 </tr>
             </thead>
             <tbody>
@@ -33,10 +32,6 @@
                             <td>@device.SerialNumber</td>
                             <td>@device.DeviceTypeName</td>
                             <td>@device.Cycles</td>
-                            <td>@device.WeeklyCycles</td>
-                            <td>
-                                <a asp-action="Delete" asp-route-id="@device.Id" class="btn btn-danger btn-sm mx-1">Eliminar</a>
-                            </td>
                         </tr>
                 }
             </tbody>

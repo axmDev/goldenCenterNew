@@ -1,0 +1,14 @@
+﻿@model IEnumerable<goldenCenterNew.Models.CT_Devices>@if (TempData["Message"] != null){    <div id="alertMessage" class="alert alert-success alert-dismissible fade show" role="alert">        @TempData["Message"]    </div>}@if (ViewBag.Title != null){    ViewBag.Title = ViewBag.DeviceType;}<div class="container">    <h1 class="text-center">@ViewBag.DeviceType</h1>    <table class="table table-bordered mt-4">        <thead>            <tr>                <th>Serial Number</th>                <th>Ciclos</th>                <th>Disponible</th>                <th>Última Actualización</th>                <th>Acción</th>            </tr>        </thead>        <tbody>            @foreach (var device in Model)            {                <tr>                    <td>@device.SerialNumber</td>                    <td>@device.Cycles</td>                    <td>@(device.Available ? "Sí" : "No")</td>                    <td>@device.LastUpdated.ToString()</td>                    <td>                        <a asp-action="Delete" asp-route-id="@device.PKDeviceID" class="btn btn-danger">Eliminar</a>                    </td>                </tr>            }        </tbody>    </table></div>@section Scripts 
+{
+    <script>
+        setTimeout(function () {
+            var alertElement = document.getElementById("alertMessage");
+
+            if (alertElement) {
+                alertElement.classList.remove('show');
+                alertElement.classList.add('fade');
+                setTimeout(() => alertElement.remove(), 200);
+            }
+        }, 2000);
+    </script>
+}
