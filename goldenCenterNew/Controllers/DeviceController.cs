@@ -65,9 +65,13 @@ namespace goldenCenterNew.Controllers
 
                     _context.SaveChanges();
 
+                    var deviceTypeNew = _context.CT_DeviceTypes.FirstOrDefault(dt => dt.PKDeviceTypeID == newDevice.FKTypeID);
                     results.Add(new
                     {
                         SerialNumber = newDevice.SerialNumber,
+                        DeviceType = deviceTypeNew.Description,
+                        Cycles = newDevice.Cycles,
+                        Available = newDevice.Available,
                         Message = "Device added and registered successfully."
                     });
 
@@ -109,6 +113,15 @@ namespace goldenCenterNew.Controllers
                                       $"{existingDevice.SerialNumber}, Type: {deviceType.Description}) and try again. Further processing has been stopped."
                         });
                     }
+
+                    if (!existingDevice.Available && existingDevice.Failures >= 3)
+                    {
+                        results.Add(new {
+                            SerialNumber = existingDevice.SerialNumber,
+                            Message = "Device is blocked due to excessive failures. Please replace or review the device."
+                        });
+                        return Ok(results);
+                    }
                 }
 
                 var history = _context.CR_CyclesHistories
@@ -146,6 +159,28 @@ namespace goldenCenterNew.Controllers
             }
 
             return Ok(results);
+        }
+
+        [HttpPost]
+        [Route("registerFailure")]
+        public IActionResult RegisterFailure([FromBody] FailureRequest request)
+        {
+            var device = _context.CT_Devices.FirstOrDefault(d => d.SerialNumber == request.SerialNumber);
+            if (device == null)
+            {
+                return NotFound(new { message = "Dispositivo no encontrado." });
+            }
+
+            device.Failures += 1;
+            if (device.Failures >= 3)
+            {
+                device.Available = false;
+                _context.SaveChanges();
+                return Ok(new { message = "Dispositivo bloqueado por múltiples fallas." });
+            }
+
+            _context.SaveChanges();
+            return Ok(new { message = "Falla registrada correctamente." });
         }
 
         private int GetIso8601WeekOfYear(DateTime time)

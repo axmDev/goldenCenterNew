@@ -12,6 +12,7 @@ namespace goldenCenterNew.Models
         public string SerialNumber { get; set; }
         public DateTime LastUpdated { get; set; }
         public bool Available { get; set; }
+        public int Failures { get; set; }
 
         [ForeignKey("FKTypeID")]
         public CT_DeviceTypes DeviceType { get; set; }
